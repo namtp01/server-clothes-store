@@ -19,10 +19,7 @@ const createProduct = expressAsyncHandler(async (req, res) =>
         if (product) {
             const createdproduct = await product.save()
             res.status(201).json(createdproduct)
-        } else {
-            res.status(404)
-            throw new Error("Invalid product data")
-        }
+        }  
     }
 })
 
@@ -143,5 +140,25 @@ const deleteProduct = expressAsyncHandler(async (req, res) =>
         throw new Error("Product Not Found")
     }
 })
+
+const createSpu = async (req, res, next) => {
+    try {
+        const spu = await newSpu(req.body)
+        new SuccessResponse('Spu created successfully', spu).send(res)
+    } catch (error) {}
+}
+
+const getProductByCategory = expressAsyncHandler(async (req, res) => {
+    const category = req.params.category; // Get the category from the request parameters
+  
+    const products = await Product.find({ category: category }); // Find products by category
+  
+    if (products.length > 0) {
+      res.json(products); // If products are found, send them in the response
+    } else {
+      res.status(404); // If no products are found, send a 404 status code
+      throw new Error('No products found for this category');
+    }
+  });
 
 export { createProduct, getAllProducts, adminGetAllProducts, getProductById, updateProduct, productReview, deleteProduct }

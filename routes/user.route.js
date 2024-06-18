@@ -6,6 +6,10 @@ const router = Router();
 
 router.post('/login', userController.login);
 router.post('/', userController.register);
+
+router.post('/forgot-password-token', userController.forgotPasswordToken);
+router.put('/reset-password/:token', userController.resetPassword);
+
 router.put('/', protect, userController.updateUserProfile)
 router.get('/profile', protect, userController.getUserProfile);
 router.get('/', protect, admin, userController.adminGetAllUsers)

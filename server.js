@@ -6,6 +6,8 @@ import { errorHandler, notFound } from './middleware/errors.js';
 import userRouter from './routes/user.route.js';
 import orderRouter from './routes/order.route.js';
 import categoryRouter from './routes/category.route.js';
+import discountRouter from './routes/discount.route.js';
+import imageRouter from './routes/image.route.js';
 import cors from 'cors';
 
 dotenv.config()
@@ -27,6 +29,8 @@ app.use("/api/products", productRoute)
 app.use("/api/users", userRouter)
 app.use("/api/categories", categoryRouter)
 app.use("/api/orders", orderRouter)
+app.use("/api/discounts", discountRouter)
+app.use("/api/images", imageRouter)
 app.get("/api/config/paypal", (req,res) => {
     res.send(process.env.PAYPAL_CLIENT_ID)
 })

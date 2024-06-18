@@ -2,6 +2,9 @@ import User from "../models/user.model.js"
 import expressAsyncHandler from "express-async-handler"
 import generateToken from "../utils/generateToken.js"
 import bcrypt from "bcryptjs"
+import refreshToken from "../utils/refreshToken.js"
+import sendMail from "./email.controller.js"
+import jwt from 'jsonwebtoken';
 
 // @desc    Login user
 // @route   POST /api/users/login
@@ -151,4 +154,69 @@ const deleteUser = expressAsyncHandler(async (req, res) =>
     }
 })
 
-export { login, register, getUserProfile, updateUserProfile, adminGetAllUsers, deleteUser }
+const forgotPasswordToken = expressAsyncHandler(async (req, res) =>
+{
+    const { email } = req.body
+    const user = await User.findOne({ email })
+    if (!user) throw new Error('User not found')
+    try {
+        const token = await refreshToken(user._id)
+        await user.save()
+
+        const resetURL = `Hi, Please follow this link to reset your password. This link is valid till 10 minutes from now. 
+        <a href='http://localhost:3000/reset-password/${token}'>Click here</a>`;
+
+        const data = {
+            to: email,
+            text: "Hello User",
+            subject: "Forgot Password Link",
+            htm: resetURL
+        }
+
+        sendMail(data)
+        res.json(token)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+})
+
+const resetPassword = expressAsyncHandler(async (req, res) => {
+    const { password } = req.body
+    const { token } = req.params
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const userId = decoded.id
+
+        const user = await User.findById(userId)
+        if (!user) throw new Error('User not found')
+
+        user.password = bcrypt.hashSync(password, 10)
+        await user.save()
+
+        res.json({ message: 'Password changed successfully' })
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+
+})
+
+const handleRefreshToken = expressAsyncHandler(async (req, res) =>
+{
+    const cookie = req.cookies;
+    if (!cookie?.refreshToken) throw new Error("No refresh token in cookies");
+    const refreshToken = cookie.refreshToken;
+    
+    const user = await User.findOne({ refreshToken });
+    if (!user) throw new Error("No refresh token present in database or not matched");
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) =>
+    {
+        if (err || user.id !== decoded.id) {
+            throw new Error("There is something wrong with refresh token");
+        }
+        const accessToken = generateToken(user?._id);
+        res.json({ accessToken });
+    });
+});
+
+export { login, register, getUserProfile, updateUserProfile, adminGetAllUsers, deleteUser, forgotPasswordToken, resetPassword }

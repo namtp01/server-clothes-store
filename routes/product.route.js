@@ -9,7 +9,10 @@ router.get('/', productController.getAllProducts)
 router.get('/all', protect, admin, productController.adminGetAllProducts)
 router.get('/:id', productController.getProductById)
 router.put('/:id', protect, admin, productController.updateProduct)
+router.put('/:id/updatequantity', protect, productController.updateProduct)
 router.post('/:id/review', protect, productController.productReview)
 router.delete('/:id', protect, admin, productController.deleteProduct)
+
+
 
 export default router

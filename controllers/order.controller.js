@@ -28,6 +28,23 @@ const adminGetAllOrders = expressAsyncHandler(async (req, res) =>
     res.json(orders)
 })
 
+// const adminGetAllOrders = expressAsyncHandler(async (req, res) => {
+//     const page = Number(req.query.pageNumber) || 1
+//     const pageSize = Number(req.query.pageSize) || 10
+//     const keyword = req.query.keyword ? {
+//         _id: { $regex: req.query.keyword, $options: "i" }
+//     } : {}
+
+//     const count = await Order.countDocuments({ ...keyword})
+//     const orders = await Order.find({ ...keyword})
+//         .sort({ _id: -1 })
+//         .populate("user", "id name email")
+//         .limit(pageSize)
+//         .skip(pageSize * (page - 1))
+
+//     res.json({ orders, page, pages: Math.ceil(count / pageSize) })
+// })
+
 // @desc    Get order by id
 // @route   GET /api/orders/:id
 // @access  Private
