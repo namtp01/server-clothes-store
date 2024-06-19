@@ -17,10 +17,10 @@ app.use(express.json())
 
 // API
 //app.use("/api/import", ImportData)
-//app.use(cors({ origin: 'http://localhost:3000'}))
+//app.use(cors())
 //app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:4000']}))
 app.use(cors({ 
-    origin: ["http://localhost:3000", "http://localhost:4000"], 
+    origin: ["http://localhost:3000", "http://localhost:4000", 'https://frontend-clothes-store.vercel.app'], 
     credentials: true, 
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
