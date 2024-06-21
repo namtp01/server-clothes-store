@@ -14,7 +14,7 @@ const createProduct = expressAsyncHandler(async (req, res) =>
         throw new Error("Product name already exist")
     } else {
         const product = new Product({
-            name, price, description, image, countInStock, color, category,
+            name, price, description, image, countInStock, category,
             user: req.user._id
         })
         if (product) {
@@ -117,7 +117,7 @@ const getProductById = expressAsyncHandler(async (req, res) =>
 // @access  Private/Admin
 const updateProduct = expressAsyncHandler(async (req, res) =>
 {
-    const { name, price, description, image, countInStock, color, category } = req.body
+    const { name, price, description, image, countInStock, category } = req.body
     const product = await Product.findById(req.params.id)
     if (product) {
         product.name = name || product.name
