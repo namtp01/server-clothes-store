@@ -56,10 +56,10 @@ const productSchema = mongoose.Schema({
         required: true,
         default: 0
     },
-    color: [{
-        type: String,
-        required: true,
-    }],
+    // color: [{
+    //     type: String,
+    //     required: true,
+    // }],
     category: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,

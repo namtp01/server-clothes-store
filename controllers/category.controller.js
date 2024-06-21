@@ -7,14 +7,14 @@ import expressAsyncHandler from 'express-async-handler'
 const createCategory = expressAsyncHandler(async (req, res) =>
 {
     try {
-        const { name, parent } = req.body
+        const { name, image, parent } = req.body
         const categoryExist = await Category.findOne({ name })
         if (categoryExist) {
             res.status(400)
             throw new Error("Category name already exist")
         } else {
             const category = new Category({
-                name, parent
+                name, image, parent
             })
             if (category) {
                 const createdCategory = await category.save()
@@ -59,10 +59,11 @@ const getCategoryById = expressAsyncHandler(async (req, res) =>
 const updateCategory = expressAsyncHandler(async (req, res) =>
 {
     const category = await Category.findById(req.params.id)
-    const { name, parent } = req.body
+    const { name, image, parent } = req.body
     if (category) {
-        category.name = req.body.name || category.name
-        category.parent = req.body.parent || category.parent
+        category.name = name || category.name
+        category.image = image || category.image
+        category.parent = parent || category.parent
 
         const updatedCategory = await category.save()
         res.json(updatedCategory)

@@ -1,12 +1,13 @@
 import Product from "../models/product.model.js";
 import expressAsyncHandler from "express-async-handler";
-
+import mongoose from "mongoose";
+import Category from "../models/category.model.js"
 // @desc    Create new product
 // @route   POST /api/products
 // @access  Private/Admin
 const createProduct = expressAsyncHandler(async (req, res) =>
 {
-    const { name, price, description, image, countInStock, color, category } = req.body
+    const { name, price, description, image, countInStock, category } = req.body
     const productExist = await Product.findOne({ name })
     if (productExist) {
         res.status(400)
@@ -19,7 +20,7 @@ const createProduct = expressAsyncHandler(async (req, res) =>
         if (product) {
             const createdproduct = await product.save()
             res.status(201).json(createdproduct)
-        }  
+        }
     }
 })
 
@@ -28,21 +29,57 @@ const createProduct = expressAsyncHandler(async (req, res) =>
 // @access  Public
 const getAllProducts = expressAsyncHandler(async (req, res) =>
 {
-    try {
-        const pageSize = 6
-        const page = Number(req.query.pageNumber) || 1
-        const keyword = req.query.keyword ? {
-            name: {
-                $regex: req.query.keyword,
-                $options: "i"
+    // try {
+    //     const pageSize = 6
+    //     const page = Number(req.query.pageNumber) || 1
+    //     const category = req.query.category
+    //     const keyword = req.query.keyword ? {
+    //         name: {
+    //             $regex: req.query.keyword,
+    //             $options: "i"
+    //         }
+    //     } : {}
+
+    //     const filter = category ? { ...keyword, category } : { ...keyword}
+    //     const count = await Product.countDocuments(filter)
+    //     const products = await Product.find(filter).limit(pageSize).skip(pageSize * (page - 1))
+    //         .sort({ _id: -1 })
+    //     res.json({ products, page, pages: Math.ceil(count / pageSize) })
+    // } catch (error) {
+    //     res.status(500).json({ message: error.message });
+    // }
+
+    const { keyword, pageNumber, category } = req.query;
+
+    const page = Number(pageNumber) || 1;
+    const pageSize = 10; // Adjust as necessary
+
+    let query = {
+        ...(keyword && { name: { $regex: keyword, $options: 'i' } }),
+    };
+
+    if (category) {
+        try {
+            const categoryDoc = await Category.findOne({ name: category });
+            if (!categoryDoc) {
+                return res.status(404).json({ message: 'Category not found' });
             }
-        } : {}
-        const count = await Product.countDocuments({ ...keyword })
-        const products = await Product.find({ ...keyword }).limit(pageSize).skip(pageSize * (page - 1))
-            .sort({ _id: -1 })
-        res.json({ products, page, pages: Math.ceil(count / pageSize) })
+    
+            query.category = categoryDoc._id; // Assign ObjectId of the found category
+        } catch (error) {
+            return res.status(500).json({ message: 'Server Error' });
+        }
+    }
+
+    try {
+        const count = await Product.countDocuments(query);
+        const products = await Product.find(query)
+            .limit(pageSize)
+            .skip(pageSize * (page - 1)).populate('category', '_id name');
+
+        res.json({ products, page, pages: Math.ceil(count / pageSize) });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Server Error' });
     }
 })
 
@@ -51,7 +88,13 @@ const getAllProducts = expressAsyncHandler(async (req, res) =>
 // @access  Private/Admin
 const adminGetAllProducts = expressAsyncHandler(async (req, res) =>
 {
-    const products = await Product.find({}).sort({ _id: -1 })
+    const keyword = req.query.keyword ? {
+        name: {
+            $regex: req.query.keyword,
+            $options: "i"
+        }
+    } : {}
+    const products = await Product.find({ ...keyword }).sort({ _id: -1 })
     res.json(products)
 })
 
@@ -82,7 +125,6 @@ const updateProduct = expressAsyncHandler(async (req, res) =>
         product.description = description || product.description
         product.image = image || product.image
         product.countInStock = countInStock || product.countInStock
-        product.color = color || product.color
         product.category = category || product.category
 
         const updatedProduct = await product.save()
@@ -141,24 +183,26 @@ const deleteProduct = expressAsyncHandler(async (req, res) =>
     }
 })
 
-const createSpu = async (req, res, next) => {
+const createSpu = async (req, res, next) =>
+{
     try {
         const spu = await newSpu(req.body)
         new SuccessResponse('Spu created successfully', spu).send(res)
-    } catch (error) {}
+    } catch (error) { }
 }
 
-const getProductByCategory = expressAsyncHandler(async (req, res) => {
+const getProductByCategory = expressAsyncHandler(async (req, res) =>
+{
     const category = req.params.category; // Get the category from the request parameters
-  
+
     const products = await Product.find({ category: category }); // Find products by category
-  
+
     if (products.length > 0) {
-      res.json(products); // If products are found, send them in the response
+        res.json(products); // If products are found, send them in the response
     } else {
-      res.status(404); // If no products are found, send a 404 status code
-      throw new Error('No products found for this category');
+        res.status(404); // If no products are found, send a 404 status code
+        throw new Error('No products found for this category');
     }
-  });
+});
 
 export { createProduct, getAllProducts, adminGetAllProducts, getProductById, updateProduct, productReview, deleteProduct }
