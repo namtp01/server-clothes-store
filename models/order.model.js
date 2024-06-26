@@ -18,10 +18,11 @@ const orderSchema = mongoose.Schema({
         }
     }],
     shippingAddress: {
+        phone: { type: String, required: true},
         address: { type: String, required: true },
-        city: { type: String, required: true },
-        postalCode: { type: String, required: true },
-        country: { type: String, required: true }
+        province: { type: String, required: true },
+        district: { type: String, required: true },
+        ward: { type: String, required: true }
     },
     paymentMethod: {
         type: String,
@@ -37,7 +38,7 @@ const orderSchema = mongoose.Schema({
     taxPrice: {
         type: Number,
         required: true,
-        default: 0.0,
+        default: 10.0,
     },
     shippingPrice: {
         type: Number,
@@ -66,7 +67,20 @@ const orderSchema = mongoose.Schema({
         type: Date,
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
+
+})
+
+orderSchema.virtual('customId').get(function() {
+    const date = new Date(this._id.getTimestamp());
+    const dateString = `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}`;
+
+    // Generate a random 6-digit number
+    const randomNum = Math.floor(100000 + Math.random() * 900000);
+
+    return `${dateString}${this.user._id}${randomNum}`;
 })
 
 export default mongoose.model("Order", orderSchema)

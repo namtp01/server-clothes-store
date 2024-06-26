@@ -11,4 +11,6 @@ router.get('/', protect, orderController.getUserOrders);
 router.put('/:id/pay', protect, orderController.payOrder);
 router.put('/:id/delivered', protect, orderController.orderDelivered);
 
+router.post('/send-order-details', protect, orderController.sendUserOrderByEmail);
+
 export default router

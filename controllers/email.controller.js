@@ -13,7 +13,7 @@ const sendMail = expressAsyncHandler(async (data, req, res) => {
     });
 
     let info = await transporter.sendMail({
-        from: '"Hey 👻" <abc@gmail.com.com>',
+        from: '"Fauget Store 👻" <abc@gmail.com.com>',
         to: data.to, // list of receivers
         subject: data.subject, // Subject line
         text: data.text, // plain text body
